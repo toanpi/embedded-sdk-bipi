@@ -230,7 +230,7 @@ static void lk_websocket_event_handler(void *handler_args,
     case WEBSOCKET_EVENT_ERROR:
       ESP_LOGI(LOG_TAG, "WEBSOCKET_EVENT_ERROR");
 #ifndef LINUX_BUILD
-      esp_restart();
+      // esp_restart();
 #endif
       break;
   }
@@ -304,7 +304,8 @@ void lk_websocket(const char *room_url, const char *token) {
 
   while (true) {
     if (xSemaphoreTake(g_mutex, portMAX_DELAY) == pdTRUE) {
-      if (get_publisher_status() == 1 && SEND_AUDIO) {
+      if (get_publisher_status() == 1) {
+      // if (get_publisher_status() == 1 && SEND_AUDIO) {
         Livekit__SignalRequest r = LIVEKIT__SIGNAL_REQUEST__INIT;
         Livekit__AddTrackRequest a = LIVEKIT__ADD_TRACK_REQUEST__INIT;
 
