@@ -161,10 +161,9 @@ void lk_publisher_peer_connection_task(void *user_data) {
       xSemaphoreGive(g_mutex);
     }
 
-    // lk_send_audio(publisher_peer_connection);
+    lk_send_audio(publisher_peer_connection);
 
     peer_connection_loop(publisher_peer_connection);
-    // vTaskDelay(pdMS_TO_TICKS(1000));
     vTaskDelay(pdMS_TO_TICKS(PUBLISHER_TICK_INTERVAL));
   }
 }
