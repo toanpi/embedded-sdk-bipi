@@ -1,13 +1,13 @@
-#ifndef LINUX_BUILD
-#include <driver/i2s.h>
+// #include <driver/i2s.h>
 #include <opus.h>
-#endif
 
 #include <esp_event.h>
 #include <esp_log.h>
 #include <string.h>
 
 #include "main.h"
+
+#define LOG_TAG "webrtc"
 
 #define SUBSCRIBER_TICK_INTERVAL 15
 #define PUBLISHER_TICK_INTERVAL 15
@@ -52,9 +52,8 @@ static void lk_publisher_onconnectionstatechange_task(PeerConnectionState state,
            peer_connection_state_to_string(state));
   if (state == PEER_CONNECTION_DISCONNECTED ||
       state == PEER_CONNECTION_CLOSED) {
-#ifndef LINUX_BUILD
+    ESP_LOGI(LOG_TAG, "Restarting");
     esp_restart();
-#endif
   }
 }
 
@@ -68,9 +67,8 @@ static void lk_subscriber_onconnectionstatechange_task(
     set_publisher_status(1);
   } else if (state == PEER_CONNECTION_DISCONNECTED ||
              state == PEER_CONNECTION_CLOSED) {
-#ifndef LINUX_BUILD
+    ESP_LOGI(LOG_TAG, "Restarting");
     esp_restart();
-#endif
   }
 }
 
@@ -145,9 +143,7 @@ void lk_subscriber_peer_connection_task(void *user_data) {
 }
 
 void lk_publisher_peer_connection_task(void *user_data) {
-#ifndef LINUX_BUILD
   lk_init_audio_encoder();
-#endif
 
   while (1) {
     auto state = peer_connection_get_state(publisher_peer_connection);
@@ -165,9 +161,7 @@ void lk_publisher_peer_connection_task(void *user_data) {
       xSemaphoreGive(g_mutex);
     }
 
-#ifndef LINUX_BUILD
     // lk_send_audio(publisher_peer_connection);
-#endif
 
     peer_connection_loop(publisher_peer_connection);
     // vTaskDelay(pdMS_TO_TICKS(1000));

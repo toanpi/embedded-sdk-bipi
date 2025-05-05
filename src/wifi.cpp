@@ -8,6 +8,8 @@
 
 #include "main.h"
 
+#define LOG_TAG "wifi"
+
 static bool g_wifi_connected = false;
 
 static void lk_event_handler(void *arg, esp_event_base_t event_base,

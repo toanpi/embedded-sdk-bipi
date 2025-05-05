@@ -5,3 +5,4 @@ managed_components
 
 deps/livekit-protocol-generated/*.h
 deps/livekit-protocol-generated/*.c
+.DS_Store

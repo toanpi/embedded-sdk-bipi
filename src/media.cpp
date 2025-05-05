@@ -14,66 +14,61 @@ static const char *TAG = "media";
 static i2s_chan_handle_t rx_chan;        // I2S rx channel handler
 static i2s_chan_handle_t tx_chan;        // I2S tx channel handler
 
-// static void init_microphone_i2s(void)
-// {
-//     /* Configure I2S channel using settings from main.c */
-//     i2s_chan_config_t chan_cfg = {
-//         .id = I2S_NUM_1,
-//         .role = I2S_ROLE_MASTER,
-//         .dma_desc_num = 8,      // Increased from 4 to 8
-//         .dma_frame_num = 2048,    // Increased from 1024 to 2048
-//         .auto_clear = false,      // Match main.c (auto_clear = false)
-//     };
+static void init_microphone_i2s(void)
+{
+    /* Configure I2S channel using settings from main.c */
+    i2s_chan_config_t chan_cfg = {
+        .id = I2S_NUM_1,
+        .role = I2S_ROLE_MASTER,
+        .dma_desc_num = 8,      // Increased from 4 to 8
+        .dma_frame_num = 2048,    // Increased from 1024 to 2048
+        .auto_clear = false,      // Match main.c (auto_clear = false)
+    };
     
-//     esp_err_t ret = i2s_new_channel(&chan_cfg, NULL, &rx_chan);
-//     if (ret != ESP_OK) {
-//         ESP_LOGE(TAG, "Failed to create I2S channel: %s", esp_err_to_name(ret));
-//         return;
-//     }
+    esp_err_t ret = i2s_new_channel(&chan_cfg, NULL, &rx_chan);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to create I2S channel: %s", esp_err_to_name(ret));
+        return;
+    }
 
-//     /* Configure I2S standard mode using settings from main.c */
-//     i2s_std_config_t std_cfg = {
-//         .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(SAMPLE_RATE),
-//         .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_MONO),
-//         .gpio_cfg = {
-//             .mclk = I2S_GPIO_UNUSED,
-//             .bclk = GPIO_NUM_2,
-//             .ws = GPIO_NUM_3,
-//             .dout = I2S_GPIO_UNUSED,
-//             .din = GPIO_NUM_5,
-//             .invert_flags = {
-//                 .mclk_inv = false,
-//                 .bclk_inv = false,
-//                 .ws_inv = false,
-//             },
-//         },
-//     };
+    /* Configure I2S standard mode using settings from main.c */
+    i2s_std_config_t std_cfg = {
+        .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(SAMPLE_RATE),
+        .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_MONO),
+        .gpio_cfg = {
+            .mclk = I2S_GPIO_UNUSED,
+            .bclk = GPIO_NUM_2,
+            .ws = GPIO_NUM_3,
+            .dout = I2S_GPIO_UNUSED,
+            .din = GPIO_NUM_5,
+            .invert_flags = {
+                .mclk_inv = false,
+                .bclk_inv = false,
+                .ws_inv = false,
+            },
+        },
+    };
     
-//     std_cfg.slot_cfg.slot_mask = I2S_STD_SLOT_LEFT;
+    std_cfg.slot_cfg.slot_mask = I2S_STD_SLOT_LEFT;
     
-//     ESP_LOGI(TAG, "Initializing I2S channel in standard mode...");
-//     ESP_LOGI(TAG, "Sample rate: %d Hz, Bit width: 16-bit, Mode: Mono, Format: Philips");
-//     ESP_LOGI(TAG, "GPIO config - BCLK: %d, WS: %d, DIN: %d", 
-//              std_cfg.gpio_cfg.bclk, std_cfg.gpio_cfg.ws, std_cfg.gpio_cfg.din);
-    
-//     ret = i2s_channel_init_std_mode(rx_chan, &std_cfg);
-//     if (ret != ESP_OK) {
-//         ESP_LOGE(TAG, "Failed to initialize I2S channel in standard mode: %s", esp_err_to_name(ret));
-//         return;
-//     }
+    ret = i2s_channel_init_std_mode(rx_chan, &std_cfg);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to initialize I2S channel in standard mode: %s", esp_err_to_name(ret));
+        return;
+    }
 
-//     /* Enable the RX channel */
-//     ESP_ERROR_CHECK(i2s_channel_enable(rx_chan));
+    /* Enable the RX channel */
+    ESP_ERROR_CHECK(i2s_channel_enable(rx_chan));
     
-//     ESP_LOGI(TAG, "I2S microphone initialized successfully");
-// }
+    ESP_LOGI(TAG, "I2S microphone initialized successfully");
+}
 
 static void init_speaker_i2s(void)
 {
     i2s_chan_config_t chan_cfg = {
         .id = I2S_NUM_0,
         .role = I2S_ROLE_MASTER,
-        .dma_desc_num = 8,
+        .dma_desc_num = 16,
         .dma_frame_num = BUFFER_SAMPLES,
         .auto_clear = true,
     };
@@ -122,7 +117,7 @@ static void init_speaker_i2s(void)
 
 
 void lk_init_audio_capture() {
-  // init_microphone_i2s();
+  init_microphone_i2s();
   init_speaker_i2s();
 }
 
@@ -194,8 +189,8 @@ void lk_init_audio_encoder() {
 void lk_send_audio(PeerConnection *peer_connection) {
   size_t bytes_read = 0;
 
-  // i2s_channel_read(rx_chan, encoder_input_buffer, BUFFER_SAMPLES, &bytes_read,
-  //          portMAX_DELAY);
+  i2s_channel_read(rx_chan, encoder_input_buffer, BUFFER_SAMPLES, &bytes_read,
+           portMAX_DELAY);
 
   auto encoded_size =
       opus_encode(opus_encoder, encoder_input_buffer, BUFFER_SAMPLES / 2,

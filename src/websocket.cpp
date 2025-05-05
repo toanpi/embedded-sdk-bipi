@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "main.h"
+#define LOG_TAG "websocket"
 
 #define WEBSOCKET_URI_SIZE 1024
 #define ANSWER_BUFFER_SIZE 1024
@@ -175,6 +176,7 @@ void lk_websocket_handle_livekit_response(Livekit__SignalResponse *packet) {
       break;
     case LIVEKIT__SIGNAL_RESPONSE__MESSAGE_LEAVE:
 #ifndef LINUX_BUILD
+      ESP_LOGI(LOG_TAG, "Restarting");
       esp_restart();
 #endif
       break;
@@ -201,6 +203,7 @@ static void lk_websocket_event_handler(void *handler_args,
     case WEBSOCKET_EVENT_DISCONNECTED:
       ESP_LOGI(LOG_TAG, "WEBSOCKET_EVENT_DISCONNECTED");
 #ifndef LINUX_BUILD
+      ESP_LOGI(LOG_TAG, "Restarting");
       esp_restart();
 #endif
       break;
@@ -216,9 +219,8 @@ static void lk_websocket_event_handler(void *handler_args,
 
       if (new_response == NULL) {
         ESP_LOGE(LOG_TAG, "Failed to decode SignalResponse message.");
-#ifndef LINUX_BUILD
+        ESP_LOGI(LOG_TAG, "Restarting");
         esp_restart();
-#endif
       } else {
         lk_websocket_handle_livekit_response(new_response);
       }
@@ -229,9 +231,8 @@ static void lk_websocket_event_handler(void *handler_args,
     }
     case WEBSOCKET_EVENT_ERROR:
       ESP_LOGI(LOG_TAG, "WEBSOCKET_EVENT_ERROR");
-#ifndef LINUX_BUILD
-      // esp_restart();
-#endif
+      ESP_LOGI(LOG_TAG, "Restarting");
+      esp_restart();
       break;
   }
 }
@@ -271,10 +272,10 @@ void lk_websocket(const char *room_url, const char *token) {
   memset(&ws_cfg, 0, sizeof(ws_cfg));
 
   ws_cfg.uri = ws_uri;
-  ws_cfg.buffer_size = WEBSOCKET_BUFFER_SIZE;
+  ws_cfg.buffer_size = WEBSOCKET_BUFFER_SIZE + 2048;
   ws_cfg.disable_pingpong_discon = true;
-  ws_cfg.reconnect_timeout_ms = 1000;
-  ws_cfg.network_timeout_ms = 1000;
+  ws_cfg.reconnect_timeout_ms = 5000;
+  ws_cfg.network_timeout_ms = 5000;
 
   auto client = esp_websocket_client_init(&ws_cfg);
   esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY,
@@ -304,8 +305,8 @@ void lk_websocket(const char *room_url, const char *token) {
 
   while (true) {
     if (xSemaphoreTake(g_mutex, portMAX_DELAY) == pdTRUE) {
-      if (get_publisher_status() == 1) {
-      // if (get_publisher_status() == 1 && SEND_AUDIO) {
+      // if (get_publisher_status() == 1) {
+      if (get_publisher_status() == 1 && SEND_AUDIO) {
         Livekit__SignalRequest r = LIVEKIT__SIGNAL_REQUEST__INIT;
         Livekit__AddTrackRequest a = LIVEKIT__ADD_TRACK_REQUEST__INIT;
 
@@ -369,6 +370,6 @@ void lk_websocket(const char *room_url, const char *token) {
 
       xSemaphoreGive(g_mutex);
     }
-    vTaskDelay(pdMS_TO_TICKS(200));
+    vTaskDelay(pdMS_TO_TICKS(500));
   }
 }

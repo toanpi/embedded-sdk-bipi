@@ -5,5 +5,5 @@
   "idf.openOcdConfigs": [
     "board/esp32s3-builtin.cfg"
   ],
-  "idf.port": "/dev/tty.usbmodem21101"
+  "idf.port": "/dev/tty.usbmodem2101"
 }

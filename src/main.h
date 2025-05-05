@@ -1,6 +1,5 @@
 #include <peer.h>
 
-#define LOG_TAG "embedded-sdk"
 #define BUFFER_SAMPLES 320
 #define SAMPLE_RATE 8000
 
