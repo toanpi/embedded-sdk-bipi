@@ -10,6 +10,47 @@
       "type": "espidf",
       "name": "Launch",
       "request": "launch"
-    }
+    },
+    {
+      // more info at: https://github.com/Marus/cortex-debug/blob/master/package.json
+      "name": "Attach ESP32S3",
+      "type": "cortex-debug",
+      "request": "attach", // launch will fail when attempting to download the app into the target
+      "cwd": "${workspaceRoot}",
+      "executable": "${workspaceFolder}/build/${command:espIdf.getProjectName}.elf",
+      "servertype": "openocd",
+      "interface": "jtag",
+      "toolchainPrefix": "xtensa-esp32s3-elf",
+      "armToolchainPath": "/Users/toanhuynh/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin",
+      // Sometimes you may need to debug each core individually in GDB or with VSCode. 
+      //In this case, change set ESP_RTOS none to set ESP_RTOS hwthread. 
+      //This will make each core appear as a hardware thread in GDB.
+      // none: only one core
+      // hwthread: multiple cores
+      // disable: display all callstack of all tasks
+      // "openOCDPreConfigLaunchCommands": ["set ESP_RTOS none"],
+      "serverpath": "/Users/toanhuynh/.espressif/tools/openocd-esp32/v0.12.0-esp32-20241016/openocd-esp32/bin/openocd",
+      "gdbPath": "${command:espIdf.getToolchainGdb}",
+      // "liveWatch": {
+      //   "enabled": true,
+      //   "samplesPerSecond": 4
+      // },
+      "configFiles": [
+        // "interface/esp_usb_jtag.cfg",
+        "board/esp32s3-builtin.cfg"],
+      "overrideAttachCommands": [
+        "set pagination off",
+        "set remote hardware-watchpoint-limit 2",
+        "mon reset halt",
+        "maintenance flush register-cache",
+        "c"
+      ],
+      "overrideRestartCommands": [
+        "set pagination off",
+        "mon reset halt", 
+        "maintenance flush register-cache",
+        "c"
+      ]
+    },
   ]
 }
